@@ -235,7 +235,7 @@ namespace PetaPoco
 		public bool KeepConnectionAlive { get; set; }
 
 		// Open a connection (can be nested)
-		public void OpenSharedConnection()
+		public virtual void OpenSharedConnection()
 		{
 			if (_sharedConnectionDepth == 0)
 			{
@@ -285,7 +285,7 @@ namespace PetaPoco
 		// Start a new transaction, can be nested, every call must be
 		//	matched by a call to AbortTransaction or CompleteTransaction
 		// Use `using (var scope=db.Transaction) { scope.Complete(); }` to ensure correct semantics
-		public void BeginTransaction()
+		public virtual void BeginTransaction()
 		{
 			_transactionDepth++;
 
@@ -300,7 +300,7 @@ namespace PetaPoco
 		}
 
 		// Internal helper to cleanup transaction stuff
-		void CleanupTransaction()
+		protected virtual void CleanupTransaction()
 		{
 			OnEndTransaction();
 
@@ -517,7 +517,7 @@ namespace PetaPoco
 		public virtual void OnExecutedCommand(IDbCommand cmd) { }
 
 		// Execute a non-query command
-		public int Execute(string sql, params object[] args)
+		public virtual int Execute(string sql, params object[] args)
 		{
 			try
 			{
@@ -549,7 +549,7 @@ namespace PetaPoco
 		}
 
 		// Execute and cast a scalar property
-		public T ExecuteScalar<T>(string sql, params object[] args)
+		public virtual T ExecuteScalar<T>(string sql, params object[] args)
 		{
 			try
 			{
@@ -749,7 +749,7 @@ namespace PetaPoco
 		}
 
 		// Return an enumerable collection of pocos
-		public IEnumerable<T> Query<T>(string sql, params object[] args) 
+		public virtual IEnumerable<T> Query<T>(string sql, params object[] args) 
 		{
 			if (EnableAutoSelect)
 				sql = AddSelectClause<T>(sql);
@@ -1045,7 +1045,7 @@ namespace PetaPoco
 		}
 
 		// Actual implementation of the multi-poco query
-		public IEnumerable<TRet> Query<TRet>(Type[] types, object cb, string sql, params object[] args)
+		public virtual IEnumerable<TRet> Query<TRet>(Type[] types, object cb, string sql, params object[] args)
 		{
 			OpenSharedConnection();
 			try
@@ -1189,7 +1189,7 @@ namespace PetaPoco
 		// Insert a poco into a table.  If the poco has a property with the same name 
 		// as the primary key the id of the new record is assigned to it.  Either way,
 		// the new id is returned.
-		public object Insert(string tableName, string primaryKeyName, bool autoIncrement, object poco)
+		public virtual object Insert(string tableName, string primaryKeyName, bool autoIncrement, object poco)
 		{
 			try
 			{
@@ -1354,7 +1354,7 @@ namespace PetaPoco
 
 
 		// Update a record with values from a poco.  primary key value can be either supplied or read from the poco
-		public int Update(string tableName, string primaryKeyName, object poco, object primaryKeyValue, IEnumerable<string> columns)
+		public virtual int Update(string tableName, string primaryKeyName, object poco, object primaryKeyValue, IEnumerable<string> columns)
 		{
 			try
 			{
@@ -1486,7 +1486,7 @@ namespace PetaPoco
 			return Delete(tableName, primaryKeyName, poco, null);
 		}
 
-		public int Delete(string tableName, string primaryKeyName, object poco, object primaryKeyValue)
+		public virtual int Delete(string tableName, string primaryKeyName, object poco, object primaryKeyValue)
 		{
 			// If primary key value not specified, pick it up from the object
 			if (primaryKeyValue == null)
